@@ -40,7 +40,7 @@ dev.off()
 
 
 # CA630
-x <- readOGR(dsn='L:/CA630/join-document', layer = 'ca630_join_lines', stringsAsFactors = FALSE)
+x <- readOGR(dsn='L:/CA630/join-document/2015-05-28', layer = 'join_lines', stringsAsFactors = FALSE)
 # make a unique ID for joing decisions that should survive subsequent re-generation of the join document
 x$jd_id <- generateLineHash(x)
 # save new version to standard location
