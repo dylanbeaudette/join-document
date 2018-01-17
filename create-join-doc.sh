@@ -1,6 +1,9 @@
 #!/bin/bash
 set -x
 
+## NOTE: CA630: ~/grass/ca630/PERMANENT
+
+
 ## NOTE: this only works when run interactively
 
 ## native coordinate system of source data: usually UTM z10 or z11 NAD83
@@ -8,14 +11,17 @@ set -x
 ## "right-hand" data are SSURGO
 
 # ssurgo-new_data-union
-new=$1
-prefix=$2
+# new=$1
+# prefix=$2
+
+new=input_data/CA630_ssurgo_union.shp
+prefix=CA630
 
 # threshold in meters
 thresh=10
 
 # import and clean topology: still has errors
-v.in.ogr --q --o dsn=$new output=ssurgo_join snap=$thresh
+v.in.ogr --q --o input=$new output=ssurgo_join snap=$thresh
 
 # add cats to boundaries in layer 2
 v.category --q --o input=ssurgo_join type=boundary option=add layer=2 output=ssurgo_join_b_cats
@@ -53,8 +59,8 @@ JOIN ssurgo_join as r on right=r.cat
 WHERE l.SURVEY_ID != r.SURVEY_ID
 AND l.SURVEY_ID = 'ssurgo'"
 
-bdy_to_flip_cats=`db.select -c sql="$backwards"`
-bdy_to_flip_cats=`echo $bdy_to_flip_cats | tr ' ' ','`
+bdy_to_flip_cats=$(db.select -c sql="$backwards")
+bdy_to_flip_cats=$(echo $bdy_to_flip_cats | tr ' ' ',')
 
 # flip line segments in original data
 v.edit --q ssurgo_join_b_cats layer=2 type=boundary cats=$bdy_to_flip_cats tool=flip
@@ -65,7 +71,6 @@ v.to.db --q map=ssurgo_join_b_cats type=boundary layer=2 qlayer=1 option=sides c
 # test: OK
 # db.select sql="$q"
 
-## TODO: this will probably throw an error
 # create new table to store results
 db.execute --q -i "DROP TABLE join_data;"
 db.execute --q sql="CREATE TABLE join_data ( bdy_id integer, l_survey varchar(10), r_survey varchar(10), l_musym varchar(10), r_musym varchar(10), r_muname varchar(10), r_mukey varchar(10), r_asym varchar(10) )"
@@ -114,7 +119,7 @@ v.distance --q from=ssurgo_final_join from_layer=2 from_type=boundary to=join_pl
 
 ### export in the natural order along chunks 
 ## this is kind of slow, but appears to work
-export_order_cats=`db.select -c "select cat from ssurgo_final_join ORDER BY chunk_id, d_along ASC"`
+export_order_cats=$(db.select -c "select cat from ssurgo_final_join ORDER BY chunk_id, d_along ASC")
 
 # toggle first record flag and start loop
 first_record=1
@@ -125,19 +130,25 @@ v.extract --o --q input=ssurgo_final_join layer=2 type=boundary cats="$this_cat"
 
 # if this is the first record in the set the nmake a new layer
 if [[ "$first_record" == "1" ]] ; then
+
+## NOTE: slightly different v.out.ogr syntax for overwriting directory+SHP
 # overwrite existing data
-v.out.ogr --o --q -e input=temp_feature_xxx layer=2 type=boundary dsn=output_data olayer=${prefix}_join_lines otype=line
+v.out.ogr --o --q -e input=temp_feature_xxx layer=2 type=boundary \
+output=output_data/${prefix}_join_lines.shp otype=line format=ESRI_Shapefile
+
 # toggle first record flag
 first_record=0
 
 # otherwise append to this layer
 else
-v.out.ogr --q -a input=temp_feature_xxx layer=2 type=boundary dsn=output_data olayer=${prefix}_join_lines otype=line
+## NOTE: appending requires specification of output DSN + layer name
+v.out.ogr --q -a input=temp_feature_xxx layer=2 type=boundary \
+output=output_data output_layer=${prefix}_join_lines otype=line format=ESRI_Shapefile
 
 fi
 
 # clean up
-g.remove --q vect=temp_feature_xxx
+g.remove --q -f type=vect name=temp_feature_xxx
 done
 
 

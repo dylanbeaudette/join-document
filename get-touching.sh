@@ -5,8 +5,8 @@
 
 
 # example:
-# sh get-touching.sh ca792_official.shp CA792 26911
-# sh get-touching.sh ca630_official.shp CA630 26910
+# bash get-touching.sh ca792_official.shp CA792 26911 2> log
+# bash get-touching.sh ca630_official.shp CA630 26910 2> log
 
 # distance threshold for locating adjacent (almost touching SSURGO polygons)
 thresh=0.0001
@@ -33,10 +33,10 @@ UPDATE dylan.join_new_data SET new_areasymbol = LOWER('$new_areasymbol');
 -- ----> cannot cast to geography because spatial indices are not used
 -- -----> threshold of about 0.0001  degrees makes sense ~ 10 meters
 
--- get data + geometry for all SSURGO data within threshold distance of CA792
--- note that for each polygon of CA792 there could be 1 or more corresponding SSURGO polygons
+-- get data + geometry for all SSURGO data within threshold distance of $survey
+-- note that for each polygon of $survey there could be 1 or more corresponding SSURGO polygons
 -- ~ 4-10 minutes
-DROP TABLE dylan.new_and_ssurgo;
+DROP TABLE IF EXISTS dylan.new_and_ssurgo;
 CREATE TABLE dylan.new_and_ssurgo AS
 SELECT join_new_data.musym as new_musym, new_areasymbol,
 mapunit.areasymbol as ssurgo_areasymbol, mapunit.musym as ssurgo_musym, mapunit.muname, mapunit.mukey, ogc_fid, 
@@ -52,7 +52,7 @@ WHERE mapunit.areasymbol != LOWER('$new_areasymbol');
 ALTER TABLE new_and_ssurgo ADD COLUMN join_poly_id SERIAL;
 
 -- generate initial mapping boundary
-DROP TABLE dylan.new_boundary;
+DROP TABLE IF EXISTS dylan.new_boundary;
 CREATE TABLE dylan.new_boundary AS
 SELECT ST_Union(wkb_geometry) as wkb_geometry
 FROM join_new_data
@@ -67,7 +67,7 @@ WHERE join_poly_id IN (SELECT join_poly_id FROM new_and_ssurgo JOIN new_boundary
 
 -- remove dupes here
 -- UNION exterior ring of new and nearby SSURGO
-DROP TABLE dylan.new_and_ssurgo_union;
+DROP TABLE IF EXISTS dylan.new_and_ssurgo_union;
 CREATE TABLE dylan.new_and_ssurgo_union AS
 SELECT DISTINCT new_areasymbol as areasymbol, 'new'::text as survey_id, new_musym as musym, ''::text as muname, ''::text as mukey, 
 ST_Transform(source_geom, $srid) as geom 
@@ -84,5 +84,8 @@ FROM new_and_ssurgo;
 # CRS is same as original CRS of new data
 pgsql2shp -f ${new_areasymbol}_ssurgo_union.shp -g geom -u postgres ssurgo_combined dylan.new_and_ssurgo_union
 
+
+# cleanup
+echo "DROP TABLE IF EXISTS dylan.join_new_data;" | psql -U postgres ssurgo_combined
 
 
