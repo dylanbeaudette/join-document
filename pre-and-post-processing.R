@@ -44,7 +44,6 @@ x$jd_id <- generateLineHash(x)
 writeOGR(x, dsn=output, layer='join_lines', driver = 'ESRI Shapefile', overwrite_layer = TRUE)
 write.csv(x@data, file=paste0(output, '/text-version.csv'), row.names=FALSE)
 
-## not all that useful
 # make network diagram:
 a <- joinAdjacency(x)
 
