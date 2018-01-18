@@ -1,7 +1,5 @@
 
 ## TODO: join ID hash should include left/right map unit symbols
-## TODO: save to folder with current date
-
 
 library(rgdal)
 library(sharpshootR)
@@ -31,14 +29,18 @@ writeOGR(x, dsn='CA630', layer='ca630_official', driver = 'ESRI Shapefile', over
 # CA630
 #
 
-date <- '2018-01-17'
+date <- Sys.Date()
 output <- paste0('l:/NRCS/MLRAShared/CA630/join-document/', date)
 
 # load data from basho/GRASS
 x <- readOGR(dsn='CA630', layer = 'CA630_join_lines', stringsAsFactors = FALSE)
 
 # make a unique ID for joing decisions that should survive subsequent re-generation of the join document
+# this function tests for collisions
 x$jd_id <- generateLineHash(x)
+
+# add left/right musymbols to join ID
+x$jd_id <- sprintf("%s-%s-%s", x$l_musym, x$r_musym, x$jd_id)
 
 # save new version to standard location
 writeOGR(x, dsn=output, layer='join_lines', driver = 'ESRI Shapefile', overwrite_layer = TRUE)
@@ -47,26 +49,9 @@ write.csv(x@data, file=paste0(output, '/text-version.csv'), row.names=FALSE)
 # make network diagram:
 a <- joinAdjacency(x)
 
-pdf(file=paste0(output, '/network-diagram.pdf'), width = 12, height = 12)
+pdf(file=paste0(output, '/network-diagram.pdf'), width = 30, height = 30)
 par(mar=c(0,0,0,0))
 plotSoilRelationGraph(a, spanning.tree='max', edge.scaling.factor=1, vertex.scaling.factor = 2, edge.transparency = 0)
 dev.off()
 
 
-
-# 
-# # SEKI
-# x <- readOGR(dsn='CA792', layer = 'join_lines', stringsAsFactors = FALSE)
-# # make a unique ID for joing decisions that should survive subsequent re-generation of the join document
-# x$jd_id <- generateLineHash(x)
-# # save new version to standard location
-# writeOGR(x, dsn='L:/CA792/join-document', layer='join_lines', driver = 'ESRI Shapefile', overwrite_layer = TRUE)
-# write.csv(x@data, file='L:/CA792/join-document/text-version.csv', row.names=FALSE)
-# 
-# # make network diagram:
-# a <- joinAdjacency(x)
-# 
-# pdf(file='L:/CA792/join-document/network-diagram.pdf', width = 12, height = 12)
-# par(mar=c(0,0,0,0))
-# plotSoilRelationGraph(a, spanning.tree='max', edge.scaling.factor=1, vertex.scaling.factor = 2, edge.transparency = 0)
-# dev.off()

@@ -4,26 +4,19 @@ library(rgdal)
 library(sharpshootR)
 library(igraph)
 
-
+# load join document
 x <- readOGR(dsn='CA630', layer = 'CA630_join_lines', stringsAsFactors = FALSE)
 
 # get relationship from left / right musym
-a <- joinAdjacency(x[x$l_musym == '5012', ])
 
-a <- joinAdjacency(x[x$l_musym == '7085', ])
+# select mu
+par(mar=c(0,0,0,0), mfcol=c(1,3))
+mu.set <- c('5012', '5201', '7085')
 
-a <- joinAdjacency(x[x$l_musym == '5201', ])
-
-a <- joinAdjacency(x)
-
-par(mar=c(0,0,0,0))
-r <- plotSoilRelationGraph(a, spanning.tree='max', edge.scaling.factor=1, vertex.scaling.factor = 2, edge.transparency = 0)
-
-
-r <- plotSoilRelationGraph(a, spanning.tree=0.5, edge.scaling.factor=1, vertex.scaling.factor = 2, edge.transparency = 0)
-
-# investigate linkages for select map units
-
-E(r)$weight
-
+for(i in mu.set) {
+  a <- joinAdjacency(x[which(x$l_musym == i), ])
+  
+  g <- plotSoilRelationGraph(a, edge.scaling.factor=1, vertex.scaling.factor = 2, edge.transparency = 0)
+  title(i, line=-2)
+}
 
