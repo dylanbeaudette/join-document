@@ -23,17 +23,15 @@ writeOGR(x, dsn='CA630', layer='ca630_official', driver = 'ESRI Shapefile', over
 ## post-processing: generate a join decision / line segment ID
 ##
 
-
-
-#
-# CA630
-#
+# toggle this for selecting surveys
+ssa <- 'CA792'
+line_file <- sprintf('%s_join_lines', ssa)
 
 date <- Sys.Date()
-output <- paste0('l:/NRCS/MLRAShared/CA630/join-document/', date)
+output <- sprintf('l:/NRCS/MLRAShared/%s/join-document/%s', ssa, date)
 
 # load data from basho/GRASS
-x <- readOGR(dsn='CA630', layer = 'CA630_join_lines', stringsAsFactors = FALSE)
+x <- readOGR(dsn=ssa, layer = line_file, stringsAsFactors = FALSE)
 
 # make a unique ID for joing decisions that should survive subsequent re-generation of the join document
 # this function tests for collisions

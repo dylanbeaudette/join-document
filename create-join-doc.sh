@@ -2,7 +2,7 @@
 set -x
 
 ## NOTE: CA630: ~/grass/ca630/PERMANENT
-
+## NOTE: CA792: ~/grass/seki/PERMANENT
 
 ## NOTE: this only works when run interactively
 
