@@ -14,8 +14,8 @@ set -x
 # new=$1
 # prefix=$2
 
-new=input_data/CA630_ssurgo_union.shp
-prefix=CA630
+new=input_data/CA792_ssurgo_union.shp
+prefix=CA792
 
 # threshold in meters
 thresh=10
