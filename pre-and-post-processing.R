@@ -11,7 +11,7 @@ x <- readOGR(dsn='l:/NRCS/MLRAShared/CA792/ca792_spatial/FG_CA792_OFFICIAL.gdb',
 writeOGR(x, dsn='CA792', layer='ca792_official', driver = 'ESRI Shapefile', overwrite_layer = TRUE)
 
 # CA630
-x <- readOGR(dsn='l:/NRCS/MLRAShared/CA630/FG_CA630_OFFICIAL.gdb', layer='ca630_a')
+x <- readOGR(dsn='l:/NRCS/MLRAShared/CA630/Archived_OFFICIAL_DB/final/FG_CA630_GIS_2018.gdb', layer='ca630_a')
 writeOGR(x, dsn='CA630', layer='ca630_official', driver = 'ESRI Shapefile', overwrite_layer = TRUE)
 
 
