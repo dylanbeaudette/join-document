@@ -44,12 +44,15 @@ x$jd_id <- sprintf("%s-%s-%s", x$l_musym, x$r_musym, x$jd_id)
 writeOGR(x, dsn=output, layer='join_lines', driver = 'ESRI Shapefile', overwrite_layer = TRUE)
 write.csv(x@data, file=paste0(output, '/text-version.csv'), row.names=FALSE)
 
-# make network diagram:
+
+## TODO: symbolize vertices differently depending on inside/outside of SSA
+
+## make network diagram:
 a <- joinAdjacency(x)
 
 pdf(file=paste0(output, '/network-diagram.pdf'), width = 30, height = 30)
 par(mar=c(0,0,0,0))
-plotSoilRelationGraph(a, spanning.tree='max', edge.scaling.factor=1, vertex.scaling.factor = 2, edge.transparency = 0)
+plotSoilRelationGraph(a, , edge.scaling.factor=1, vertex.scaling.factor = 2, edge.col = 'black')
 dev.off()
 
 
